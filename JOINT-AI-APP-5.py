@@ -421,6 +421,7 @@ if 'scaler' not in st.session_state:
         if tgt == 'BT': range_val = (0.0, 8.0)
         elif tgt == 'RT': range_val = (0.0, 4.0)
         elif tgt == 'AGB': range_val = (0.0, 0.3)
+        elif tgt == 'RGB': range_val = (0.0, 0.4)    
         else: range_val = (0.0, 1.0)
         
         init_dict[f'{t_low}_s_val'] = range_val
