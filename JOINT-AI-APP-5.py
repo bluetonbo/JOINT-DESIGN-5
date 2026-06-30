@@ -931,7 +931,7 @@ for idx, tgt in enumerate(valid_tgts):
                sub_nc1, sub_nc2 = st.columns(2)
                sub_nc1.number_input("Sim Min", step=0.01, key=f"sim_tgt_{t_low}_n_min", on_change=on_sim_min_change, args=(t_low,))
                sub_nc2.number_input("Sim Max", step=0.01, key=f"sim_tgt_{t_low}_n_max", on_change=on_sim_max_change, args=(t_low,))
-            st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
             
             if st.button(L_G['run_sim'], type="secondary"):
                 def sim_target_loss(x):
