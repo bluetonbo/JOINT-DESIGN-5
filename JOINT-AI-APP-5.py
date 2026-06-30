@@ -919,19 +919,18 @@ for idx, tgt in enumerate(valid_tgts):
                                on_change=on_sim_max_change, args=(t_low,))
     st.markdown("<div style='margin-bottom:15px;'></div>", unsafe_allow_html=True)
 
-            if undefined_tgts:
-                with st.expander(f"Undefined Quality Targets (미정 항목 {len(undefined_tgts)}종 제어단)"):
-                    for tgt in undefined_tgts:
-                        t_low = tgt.lower()
-                        st.markdown(f"<p style='font-size:0.8rem; margin:2px 0; color:#94a3b8;'>• {tgt} Range</p>", unsafe_allow_html=True)
-                        cx1, cx2 = st.columns([1.8, 1.2])
-                        with cx1:
-                            st.slider(f"Sim {tgt} S", -0.5, 5.0, step=0.01, label_visibility="collapsed", key=f"sim_tgt_{t_low}_s_val", on_change=on_sim_slider_change, args=(t_low,))
-                        with cx2:
-                            sub_nc1, sub_nc2 = st.columns(2)
-                            sub_nc1.number_input("Sim Min", step=0.01, key=f"sim_tgt_{t_low}_n_min", on_change=on_sim_min_change, args=(t_low,))
-                            sub_nc2.number_input("Sim Max", step=0.01, key=f"sim_tgt_{t_low}_n_max", on_change=on_sim_max_change, args=(t_low,))
-
+    if undefined_tgts:
+        with st.expander(f"Undefined Quality Targets (미정 항목 {len(undefined_tgts)}종 제어단)"):
+            for tgt in undefined_tgts:
+                     t_low = tgt.lower()
+                     st.markdown(f"<p style='font-size:0.8rem; margin:2px 0; color:#94a3b8;'>• {tgt} Range</p>", unsafe_allow_html=True)
+                     cx1, cx2 = st.columns([1.8, 1.2])
+            with cx1:
+                 st.slider(f"Sim {tgt} S", -0.5, 5.0, step=0.01, label_visibility="collapsed", key=f"sim_tgt_{t_low}_s_val", on_change=on_sim_slider_change, args=(t_low,))
+        with cx2:
+               sub_nc1, sub_nc2 = st.columns(2)
+               sub_nc1.number_input("Sim Min", step=0.01, key=f"sim_tgt_{t_low}_n_min", on_change=on_sim_min_change, args=(t_low,))
+               sub_nc2.number_input("Sim Max", step=0.01, key=f"sim_tgt_{t_low}_n_max", on_change=on_sim_max_change, args=(t_low,))
             st.markdown("</div>", unsafe_allow_html=True)
             
             if st.button(L_G['run_sim'], type="secondary"):
