@@ -891,19 +891,33 @@ if st.session_state['scaler'] is not None:
         with sim_l:
             st.markdown(f"<div class='glass-card'><div class='glass-card-title'>{L_G['live_input']}</div>", unsafe_allow_html=True)
             
-            for idx, tgt in enumerate(valid_tgts):
-                t_low = tgt.lower()
-                max_slider_val = 20.0 if tgt in ['BT', 'RT'] else (0.3 if tgt == 'AGB' else 5.0)
-                
-                st.markdown(f"<p style='font-size:0.85rem; font-weight:600; color:#00e5ff; margin-bottom:5px;'>{idx+1}. Sim Target {tgt} Range</p>", unsafe_allow_html=True)
-                col_sb1, col_sb2 = st.columns([1.8, 1.2])
-                with col_sb1:
-                    st.slider(f"Sim {tgt} Slider UI", 0.0, float(max_slider_val), step=0.001 if tgt=='AGB' else 0.05, label_visibility="collapsed", key=f"sim_tgt_{t_low}_s_val", on_change=on_sim_slider_change, args=(t_low,))
-                with col_sb2:
-                    sb_num_c1, sb_num_c2 = st.columns(2)
-                    sb_num_c1.number_input("Sim Min", step=0.001 if tgt=='AGB' else 0.1, key=f"sim_tgt_{t_low}_n_min", on_change=on_sim_min_change, args=(t_low,))
-                    sb_num_c2.number_input("Sim Max", step=0.001 if tgt=='AGB' else 0.1, key=f"sim_tgt_{t_low}_n_max", on_change=on_sim_max_change, args=(t_low,))
-                st.markdown("<div style='margin-bottom:15px;'></div>", unsafe_allow_html=True)
+            # 코드 상단에 앞서 정의한 spec_limits 사전이 있어야 합니다.
+# spec_limits = {'BT': (5.0, 7.0), 'RT': (2.0, 4.0), 'AGB': (0.0, 0.2), ...}
+
+for idx, tgt in enumerate(valid_tgts):
+    t_low = tgt.lower()
+    
+    # [수정된 부분] 하드코딩 대신 spec_limits 사전에서 (min, max)를 가져옵니다.
+    # 만약 정의되지 않은 변수라면 기존처럼 0.0~5.0을 사용하도록 설정
+    min_limit, max_limit = spec_limits.get(tgt, (0.0, 5.0))
+    
+    # 스텝 설정 (AGB만 정밀하게, 나머지는 0.05 혹은 0.1로 기존 유지)
+    step_val = 0.001 if tgt == 'AGB' else 0.05
+    
+    st.markdown(f"<p style='font-size:0.85rem; font-weight:600; color:#00e5ff; margin-bottom:5px;'>{idx+1}. Sim Target {tgt} Range</p>", unsafe_allow_html=True)
+    col_sb1, col_sb2 = st.columns([1.8, 1.2])
+    
+    with col_sb1:
+        st.slider(f"Sim {tgt} Slider UI", min_limit, max_limit, step=step_val, 
+                  label_visibility="collapsed", key=f"sim_tgt_{t_low}_s_val", 
+                  on_change=on_sim_slider_change, args=(t_low,))
+    with col_sb2:
+        sb_num_c1, sb_num_c2 = st.columns(2)
+        sb_num_c1.number_input("Sim Min", step=step_val, key=f"sim_tgt_{t_low}_n_min", 
+                               on_change=on_sim_min_change, args=(t_low,))
+        sb_num_c2.number_input("Sim Max", step=step_val, key=f"sim_tgt_{t_low}_n_max", 
+                               on_change=on_sim_max_change, args=(t_low,))
+    st.markdown("<div style='margin-bottom:15px;'></div>", unsafe_allow_html=True)
 
             if undefined_tgts:
                 with st.expander(f"Undefined Quality Targets (미정 항목 {len(undefined_tgts)}종 제어단)"):
