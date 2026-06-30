@@ -1,0 +1,9 @@
+# requirements.txt 파일 내용
+streamlit
+pandas
+numpy
+scikit-learn
+scipy
+openai
+google-generativeai
+openpyxl
