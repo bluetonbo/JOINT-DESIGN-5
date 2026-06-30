@@ -210,21 +210,23 @@ X_list = [
     'CH1', 'CH2', 'CH3', 'CH4', 'CGW', 'CGD', 'CD6', 'CR', 'CF', 'SH1', 'SR', 
     'SH2', 'SH3', 'SH4', 'SH5', 'SH6', 'SID', 'SOD', 'SH7', 'SH8', 'SH9', 'SR2', 'COHA'
 ]
-target_vars = ['BT', 'RT', 'AGB', 'RGB', 'AGA', 'RGA', 'AGI', 'RGI']
+# 1. 먼저 정의해야 합니다 (이 코드가 루프보다 위에 있어야 함)
+target_vars = ["BT", "RT", "AGB", "RGB", "AGA", "RGA", "AGI", "RGI"]
 
-# 기본 Spec 가이드 텍스트 매핑용 사전
-SPEC_GUIDE = {
-    'BT': '0.0 ~ 8.0 Nm',
-    'RT': '0.0 ~ 4.0 Nm',
-    'AGB': '0.0 ~ 0.3 mm',
-    'RGB': '0.0 ~ 0.4 mm',
-    'AGA': '0.0 ~ 1.0 mm',
-    'RGA': '0.0 ~ 1.0 mm',
-    'AGI': '0.0 ~ 1.0 mm',
-    'RGI': '0.0 ~ 1.0 mm'
+spec_limits = {
+    "BT": (5.0, 7.0),
+    "RT": (2.0, 4.0),
+    "AGB": (0.0, 0.2),
+    "RGB": (0.0, 0.4),
+    "AGA": (0.0, 1.0),
+    "RGA": (0.0, 1.0),
+    "AGI": (0.0, 1.0),
+    "RGI": (0.0, 1.0)
 }
 
+# 2. 그 다음에 루프를 실행해야 합니다
 for tgt in target_vars:
+    # 이제 spec_limits가 정의되어 있으므로 오류가 발생하지 않습니다
     min_val, max_val = spec_limits.get(tgt, (0.0, 1.0))
     st.session_state[f'opt_{tgt.lower()}'] = st.slider(
         f"Target {tgt} Range",
