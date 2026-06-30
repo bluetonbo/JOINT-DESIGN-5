@@ -213,16 +213,12 @@ X_list = [
 target_vars = ['BT', 'RT', 'AGB', 'RGB', 'AGA', 'RGA', 'AGI', 'RGI']
 
 # 기본 Spec 가이드 텍스트 매핑용 사전
-SPEC_GUIDE = {
-    'BT': '0.0 ~ 8.0 Nm',
-    'RT': '0.0 ~ 4.0 Nm',
-    'AGB': '0.0 ~ 0.3 mm',
-    'RGB': '0.0 ~ 1.0 mm',
-    'AGA': '0.0 ~ 1.0 mm',
-    'RGA': '0.0 ~ 1.0 mm',
-    'AGI': '0.0 ~ 1.0 mm',
-    'RGI': '0.0 ~ 1.0 mm'
+spec_limits = {
+    'BT': (5.0, 7.0), 'RT': (2.0, 4.0), 'AGB': (0.0, 0.2),
+    'RGB': (0.0, 0.4), 'AGA': (0.0, 1.0), 'RGA': (0.0, 1.0),
+    'AGI': (0.0, 1.0), 'RGI': (0.0, 1.0)
 }
+SPEC_GUIDE = {k: f"{v[0]}~{v[1]}" for k, v in spec_limits.items()}
 
 # [추가] 원본 학습데이터(VOLVO_SPA12_CABJ_TRAIN_DATA) 헤더 기반 변수명 약자 -> 실제 의미 매핑 사전
 # 이 앱이 사용하는 변수명은 볼스터드(Ball Stud) 조인트 스웨이징(swaging) 조립 공정 검사 데이터의 약자임
