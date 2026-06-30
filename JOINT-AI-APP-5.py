@@ -165,12 +165,12 @@ LANG_DICT = {
         "dl_btn_spec": "DOWNLOAD RECOMMENDED SPECS",
         "dl_btn_pred": "DOWNLOAD PREDICTED PERFORMANCE",
         "db_export_title": "💾 External Database Export",
-        "db_prepare_btn": "⚙️ Generate & Save DB Snapshot",
-        "db_current_latest": "✨ The file contains the latest data state.",
+        "db_prepare_btn": " Generate & Save DB Snapshot",
+        "db_current_latest": " The file contains the latest data state.",
         "db_prepared_msg": "Prepared File: ",
         "db_pc_download": "📥 Download Saved DB File to PC Directly",
         "db_save_empty": "No data available to save. Please run Engine Initialization first.",
-        "ai_title": "🤖 JOINT AI Process Insight Guidance",
+        "ai_title": " JOINT AI Process Insight Guidance",
         "ai_btn": "Generate LLM-based Process Guidelines",
         "ai_loading": "Analyzing optimized variables and quality KPI data to generate factory guidance..."
     }
