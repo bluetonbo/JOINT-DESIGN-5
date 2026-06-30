@@ -520,7 +520,14 @@ with st.sidebar:
                 models = {}
                 model_metadata = {} 
                 
-                for target in target_vars:
+                train_progress_bar = st.sidebar.progress(0, text="모델 학습 준비 중...")
+                total_targets_n = len(target_vars)
+                
+                for t_idx, target in enumerate(target_vars):
+                    train_progress_bar.progress(
+                        t_idx / total_targets_n,
+                        text=f"⚙️ KPI 모델 학습 중 ({t_idx+1}/{total_targets_n}): {target}"
+                    )
                     X_scaled_t = scaler.transform(df_imputed[X_list])
                     y_t = df_imputed[target]
                     
@@ -546,6 +553,7 @@ with st.sidebar:
                     models[f'model_{target.lower()}'] = rf_model if best_algo_name == "RandomForest" else (xgb_model if best_algo_name == "XGBoost" else lr_model)
                     model_metadata[f'algo_{target.lower()}'] = best_algo_name
                 
+                train_progress_bar.progress(1.0, text="✅ 모든 KPI 모델 학습 완료")
                 st.session_state['model_metadata'] = model_metadata
                 
                 data_bounds = {}
@@ -741,7 +749,14 @@ if st.session_state['scaler'] is not None:
                 best_res = None
                 selected_algo = 'SLSQP'
                 
-                for algo in algorithms:
+                opt_progress_bar = st.progress(0, text="역추론 최적화 탐색 준비 중...")
+                total_algos_n = len(algorithms)
+                
+                for a_idx, algo in enumerate(algorithms):
+                    opt_progress_bar.progress(
+                        a_idx / total_algos_n,
+                        text=f"🔍 알고리즘 탐색 중 ({a_idx+1}/{total_algos_n}): {algo}"
+                    )
                     try:
                         if algo in ['L-BFGS-B', 'SLSQP']:
                             res_temp = minimize(target_loss, init_x, method=algo, bounds=bands)
@@ -758,6 +773,8 @@ if st.session_state['scaler'] is not None:
                             selected_algo = algo
                     except Exception as e:
                         continue
+                
+                opt_progress_bar.progress(1.0, text=f"✅ 최적화 완료 (선택된 알고리즘: {selected_algo})")
 
                 q_opt = st.session_state['scaler'].transform(pd.DataFrame([best_res.x], columns=X_list))
                 
@@ -920,9 +937,10 @@ if st.session_state['scaler'] is not None:
                 init_x = [(db[v][0] + db[v][1]) / 2 for v in X_list]
                 bands = [db[v] for v in X_list]
                 
-                res_sim = minimize(sim_target_loss, init_x, method='SLSQP', bounds=bands)
-                final_sim_x = np.clip(res_sim.x, [b[0] for b in bands], [b[1] for b in bands])
-                sim_loss_val = sim_target_loss(final_sim_x)
+                with st.spinner("🔍 가상 역최적화 파라미터 탐색 중..."):
+                    res_sim = minimize(sim_target_loss, init_x, method='SLSQP', bounds=bands)
+                    final_sim_x = np.clip(res_sim.x, [b[0] for b in bands], [b[1] for b in bands])
+                    sim_loss_val = sim_target_loss(final_sim_x)
                 
                 q_sim_opt = st.session_state['scaler'].transform(pd.DataFrame([final_sim_x], columns=X_list))
                 
