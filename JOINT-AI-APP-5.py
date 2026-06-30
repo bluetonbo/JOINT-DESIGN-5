@@ -217,7 +217,7 @@ SPEC_GUIDE = {
     'BT': '0.0 ~ 8.0 Nm',
     'RT': '0.0 ~ 4.0 Nm',
     'AGB': '0.0 ~ 0.3 mm',
-    'RGB': '0.0 ~ 0.4 mm',
+    'RGB': '0.0 ~ 1.0 mm',
     'AGA': '0.0 ~ 1.0 mm',
     'RGA': '0.0 ~ 1.0 mm',
     'AGI': '0.0 ~ 1.0 mm',
@@ -891,54 +891,39 @@ if st.session_state['scaler'] is not None:
         with sim_l:
             st.markdown(f"<div class='glass-card'><div class='glass-card-title'>{L_G['live_input']}</div>", unsafe_allow_html=True)
             
-            # 코드 상단에 앞서 정의한 spec_limits 사전이 있어야 합니다.
-# spec_limits = {'BT': (5.0, 7.0), 'RT': (2.0, 4.0), 'AGB': (0.0, 0.2), ...}
+            for idx, tgt in enumerate(valid_tgts):
+                t_low = tgt.lower()
+                max_slider_val = 20.0 if tgt in ['BT', 'RT'] else (0.3 if tgt == 'AGB' else 5.0)
+                
+                st.markdown(f"<p style='font-size:0.85rem; font-weight:600; color:#00e5ff; margin-bottom:5px;'>{idx+1}. Sim Target {tgt} Range</p>", unsafe_allow_html=True)
+                col_sb1, col_sb2 = st.columns([1.8, 1.2])
+                with col_sb1:
+                    st.slider(f"Sim {tgt} Slider UI", 0.0, float(max_slider_val), step=0.001 if tgt=='AGB' else 0.05, label_visibility="collapsed", key=f"sim_tgt_{t_low}_s_val", on_change=on_sim_slider_change, args=(t_low,))
+                with col_sb2:
+                    sb_num_c1, sb_num_c2 = st.columns(2)
+                    sb_num_c1.number_input("Sim Min", step=0.001 if tgt=='AGB' else 0.1, key=f"sim_tgt_{t_low}_n_min", on_change=on_sim_min_change, args=(t_low,))
+                    sb_num_c2.number_input("Sim Max", step=0.001 if tgt=='AGB' else 0.1, key=f"sim_tgt_{t_low}_n_max", on_change=on_sim_max_change, args=(t_low,))
+                st.markdown("<div style='margin-bottom:15px;'></div>", unsafe_allow_html=True)
 
-for idx, tgt in enumerate(valid_tgts):
-    t_low = tgt.lower()
-    
-    # [수정된 부분] 하드코딩 대신 spec_limits 사전에서 (min, max)를 가져옵니다.
-    # 만약 정의되지 않은 변수라면 기존처럼 0.0~5.0을 사용하도록 설정
-    min_limit, max_limit = spec_limits.get(tgt, (0.0, 5.0))
-    
-    # 스텝 설정 (AGB만 정밀하게, 나머지는 0.05 혹은 0.1로 기존 유지)
-    step_val = 0.001 if tgt == 'AGB' else 0.05
-    
-    st.markdown(f"<p style='font-size:0.85rem; font-weight:600; color:#00e5ff; margin-bottom:5px;'>{idx+1}. Sim Target {tgt} Range</p>", unsafe_allow_html=True)
-    col_sb1, col_sb2 = st.columns([1.8, 1.2])
-    
-    with col_sb1:
-        st.slider(f"Sim {tgt} Slider UI", min_limit, max_limit, step=step_val, 
-                  label_visibility="collapsed", key=f"sim_tgt_{t_low}_s_val", 
-                  on_change=on_sim_slider_change, args=(t_low,))
-    with col_sb2:
-        sb_num_c1, sb_num_c2 = st.columns(2)
-        sb_num_c1.number_input("Sim Min", step=step_val, key=f"sim_tgt_{t_low}_n_min", 
-                               on_change=on_sim_min_change, args=(t_low,))
-        sb_num_c2.number_input("Sim Max", step=step_val, key=f"sim_tgt_{t_low}_n_max", 
-                               on_change=on_sim_max_change, args=(t_low,))
-    st.markdown("<div style='margin-bottom:15px;'></div>", unsafe_allow_html=True)
+            if undefined_tgts:
+                with st.expander(f"Undefined Quality Targets (미정 항목 {len(undefined_tgts)}종 제어단)"):
+                    for tgt in undefined_tgts:
+                        t_low = tgt.lower()
+                        st.markdown(f"<p style='font-size:0.8rem; margin:2px 0; color:#94a3b8;'>• {tgt} Range</p>", unsafe_allow_html=True)
+                        cx1, cx2 = st.columns([1.8, 1.2])
+                        with cx1:
+                            st.slider(f"Sim {tgt} S", -0.5, 5.0, step=0.01, label_visibility="collapsed", key=f"sim_tgt_{t_low}_s_val", on_change=on_sim_slider_change, args=(t_low,))
+                        with cx2:
+                            sub_nc1, sub_nc2 = st.columns(2)
+                            sub_nc1.number_input("Sim Min", step=0.01, key=f"sim_tgt_{t_low}_n_min", on_change=on_sim_min_change, args=(t_low,))
+                            sub_nc2.number_input("Sim Max", step=0.01, key=f"sim_tgt_{t_low}_n_max", on_change=on_sim_max_change, args=(t_low,))
 
-    if undefined_tgts:
-        with st.expander(f"Undefined Quality Targets (미정 항목 {len(undefined_tgts)}종 제어단)"):
-            for tgt in undefined_tgts:
-                     t_low = tgt.lower()
-                     st.markdown(f"<p style='font-size:0.8rem; margin:2px 0; color:#94a3b8;'>• {tgt} Range</p>", unsafe_allow_html=True)
-                     cx1, cx2 = st.columns([1.8, 1.2])
-            with cx1:
-                 st.slider(f"Sim {tgt} S", -0.5, 5.0, step=0.01, label_visibility="collapsed", key=f"sim_tgt_{t_low}_s_val", on_change=on_sim_slider_change, args=(t_low,))
-                sub_nc1.number_input("Sim Min", step=0.01, key=f"sim_tgt_{t_low}_n_min", on_change=on_sim_min_change, args=(t_low,))
-                sub_nc2.number_input("Sim Max", step=0.01, key=f"sim_tgt_{t_low}_n_max", on_change=on_sim_max_change, args=(t_low,))
-        
-        # 1. 닫는 태그는 st.markdown이 루프와 동일한 위치(혹은 적절한 위치)에 있어야 합니다.
             st.markdown("</div>", unsafe_allow_html=True)
-
-    # 2. 버튼은 for 루프가 끝난 뒤, 전체 페이지 레이아웃에 맞춰 정렬되어야 합니다.
-    # (for 루프 내부라면 루프와 들여쓰기를 맞추고, 루프 밖이라면 완전히 왼쪽으로 당기세요)
-    if st.button(L_G['run_sim'], type="secondary"):
-        def sim_target_loss(x):
-            df_x = pd.DataFrame([x], columns=X_list)
-            q = st.session_state['scaler'].transform(df_x)
+            
+            if st.button(L_G['run_sim'], type="secondary"):
+                def sim_target_loss(x):
+                    df_x = pd.DataFrame([x], columns=X_list)
+                    q = st.session_state['scaler'].transform(df_x)
                     
                     total_loss = 0.0
                     for tgt in target_vars:
