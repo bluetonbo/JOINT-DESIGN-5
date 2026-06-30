@@ -927,16 +927,18 @@ for idx, tgt in enumerate(valid_tgts):
                      cx1, cx2 = st.columns([1.8, 1.2])
             with cx1:
                  st.slider(f"Sim {tgt} S", -0.5, 5.0, step=0.01, label_visibility="collapsed", key=f"sim_tgt_{t_low}_s_val", on_change=on_sim_slider_change, args=(t_low,))
-        with cx2:
-               sub_nc1, sub_nc2 = st.columns(2)
-               sub_nc1.number_input("Sim Min", step=0.01, key=f"sim_tgt_{t_low}_n_min", on_change=on_sim_min_change, args=(t_low,))
-               sub_nc2.number_input("Sim Max", step=0.01, key=f"sim_tgt_{t_low}_n_max", on_change=on_sim_max_change, args=(t_low,))
-        st.markdown("</div>", unsafe_allow_html=True)
-            
-            if st.button(L_G['run_sim'], type="secondary"):
-                def sim_target_loss(x):
-                    df_x = pd.DataFrame([x], columns=X_list)
-                    q = st.session_state['scaler'].transform(df_x)
+                sub_nc1.number_input("Sim Min", step=0.01, key=f"sim_tgt_{t_low}_n_min", on_change=on_sim_min_change, args=(t_low,))
+                sub_nc2.number_input("Sim Max", step=0.01, key=f"sim_tgt_{t_low}_n_max", on_change=on_sim_max_change, args=(t_low,))
+        
+        # 1. 닫는 태그는 st.markdown이 루프와 동일한 위치(혹은 적절한 위치)에 있어야 합니다.
+            st.markdown("</div>", unsafe_allow_html=True)
+
+    # 2. 버튼은 for 루프가 끝난 뒤, 전체 페이지 레이아웃에 맞춰 정렬되어야 합니다.
+    # (for 루프 내부라면 루프와 들여쓰기를 맞추고, 루프 밖이라면 완전히 왼쪽으로 당기세요)
+    if st.button(L_G['run_sim'], type="secondary"):
+        def sim_target_loss(x):
+            df_x = pd.DataFrame([x], columns=X_list)
+            q = st.session_state['scaler'].transform(df_x)
                     
                     total_loss = 0.0
                     for tgt in target_vars:
