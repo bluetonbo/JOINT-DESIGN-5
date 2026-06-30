@@ -4,6 +4,6 @@ pandas
 numpy
 scikit-learn
 scipy
-openai
+xgboost
 google-generativeai
 openpyxl
