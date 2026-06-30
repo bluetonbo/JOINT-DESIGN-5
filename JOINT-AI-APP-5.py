@@ -224,6 +224,56 @@ SPEC_GUIDE = {
     'RGI': '0.0 ~ 1.0 mm'
 }
 
+# [추가] 원본 학습데이터(VOLVO_SPA12_CABJ_TRAIN_DATA) 헤더 기반 변수명 약자 -> 실제 의미 매핑 사전
+# 이 앱이 사용하는 변수명은 볼스터드(Ball Stud) 조인트 스웨이징(swaging) 조립 공정 검사 데이터의 약자임
+VAR_GLOSSARY = {
+    'BD': 'ballstud_diameter_mm (볼스터드 직경)',
+    'CID': 'case_inner_diameter_mm (케이스 내경)',
+    'BH': 'bearing_Height_mm (베어링 높이)',
+    'CIH': 'case_inner_height_mm (케이스 내측 높이)',
+    'CITH': 'case_inner_taper_height_mm (케이스 내측 테이퍼 높이)',
+    'COHB': 'case_outer_height_before_mm (케이스 외측 높이, 스웨이징 전)',
+    'COHA': 'case_outer_height_after_mm (케이스 외측 높이, 스웨이징 후)',
+    'CD1': 'case_d1_mm (케이스 치수 D1)',
+    'CD2': 'case_d2_mm (케이스 치수 D2)',
+    'CD3': 'case_d3_mm (케이스 치수 D3)',
+    'CD4': 'case_d4_mm (케이스 치수 D4)',
+    'CD5': 'case_d5_mm (케이스 치수 D5)',
+    'CD6': 'case_d6_mm (케이스 치수 D6)',
+    'CH1': 'case_h1_mm (케이스 높이 H1)',
+    'CH2': 'case_h2_mm (케이스 높이 H2)',
+    'CH3': 'case_h3_mm (케이스 높이 H3)',
+    'CH4': 'case_h4_mm (케이스 높이 H4)',
+    'CGW': 'case_groove_width_mm (케이스 그루브 폭)',
+    'CGD': 'case_groove_depth_mm (케이스 그루브 깊이)',
+    'CR': 'case_roundness_mm (케이스 진원도)',
+    'CF': 'case_flatness_mm (케이스 평면도)',
+    'SH1': 'seat_h1_mm (시트 높이 H1)',
+    'SR': 'seat_R_mm (시트 R 치수)',
+    'SH2': 'seat_h2_mm (시트 높이 H2)',
+    'SH3': 'seat_h3_mm (시트 높이 H3)',
+    'SH4': 'seat_h4_mm (시트 높이 H4)',
+    'SH5': 'seat_h5_mm (시트 높이 H5)',
+    'SH6': 'seat_h6_mm (시트 높이 H6)',
+    'SID': 'seat_inner_d_mm (시트 내경)',
+    'SOD': 'seat_outer_d_mm (시트 외경)',
+    'SH7': 'seat_h7_mm (시트 높이 H7)',
+    'SH8': 'seat_h8_mm (시트 높이 H8)',
+    'SH9': 'seat_h9_mm (시트 높이 H9)',
+    'SR2': 'seat_R2_mm (시트 R2 치수)',
+}
+
+TARGET_GLOSSARY = {
+    'BT': 'breakaway_torque_Nm (분리 토크 / 초기 회전 토크)',
+    'RT': 'running_torque_Nm (회전 토크)',
+    'AGB': 'axial_gap_before_mm (축방향 유격, 내구 시험 전)',
+    'RGB': 'radial_gap_before_mm (반경방향 유격, 내구 시험 전)',
+    'AGA': 'axial_gap_after_mm (축방향 유격, 내구 시험 후)',
+    'RGA': 'radial_gap_after_mm (반경방향 유격, 내구 시험 후)',
+    'AGI': 'axial_gap_increase_mm (축방향 유격 증가량, 시험 전후 차)',
+    'RGI': 'radial_gap_increase_mm (반경방향 유격 증가량, 시험 전후 차)',
+}
+
 def on_slider_change(prefix):
     val_tuple = st.session_state[f'{prefix}_s_val']
     st.session_state[f'{prefix}_n_min'] = val_tuple[0]
@@ -266,17 +316,63 @@ def on_sim_max_change(prefix):
         st.session_state[f'sim_tgt_{prefix}_n_max'] = new_max
     st.session_state[f'sim_tgt_{prefix}_s_val'] = (current_slider[0], new_max)
 
-# [최종 수정된 AI 함수: 404 및 429 오류 완벽 방지]
+# [최종 수정된 AI 함수: 404 및 429 오류 완벽 방지 + 실제 변수 의미 기반 컨텍스트 고정(grounding)]
 def generate_ai_guidance(process_specs, predicted_kpis, mode="Optimization"):
     api_key = os.environ.get("GOOGLE_API_KEY")
     if not api_key:
         return "⚠️ API 키가 환경변수에 설정되지 않았습니다."
 
     genai.configure(api_key=api_key)
-    
-    specs_str = "\n".join([f"  - {k}: {v:.3f}" for k, v in process_specs.items()])
-    kpis_str = "\n".join([f"  - {k}: {v:.3f}" for k, v in predicted_kpis.items()])
-    prompt = f"자동차 공정 기술 분석 [{mode}]:\n변수:\n{specs_str}\nKPI:\n{kpis_str}"
+
+    # 변수 약자를 실제 의미(VAR_GLOSSARY/TARGET_GLOSSARY)와 함께 표기하여 AI가 정확히 이해하도록 함
+    specs_str = "\n".join([
+        f"  - {k} [{VAR_GLOSSARY.get(k, '정의되지 않은 변수')}]: {v:.3f}"
+        for k, v in process_specs.items()
+    ])
+    kpis_lines = []
+    for k, v in predicted_kpis.items():
+        spec_range = SPEC_GUIDE.get(k, "정의되지 않음")
+        glossary = TARGET_GLOSSARY.get(k, '정의되지 않은 KPI')
+        kpis_lines.append(f"  - {k} [{glossary}]: {v:.3f}  (정상 스펙 범위: {spec_range})")
+    kpis_str = "\n".join(kpis_lines)
+
+    mode_desc = {
+        "Optimization": "사용자가 설정한 목표 품질(KPI) 범위를 만족시키기 위해 역최적화 알고리즘으로 도출한 '추천 공정 스펙' 결과",
+        "Simulation": "사용자가 What-If 시뮬레이터에서 가상으로 설정한 목표 품질 범위에 대해 역최적화로 도출한 '가상 시뮬레이션' 결과"
+    }.get(mode, "공정 최적화 결과")
+
+    # 시스템 지시문: VOLVO SPA1/2 CABJ 볼스터드 조인트 스웨이징 공정 데이터를 학습한 시스템임을 명확히 고정
+    system_instruction = (
+        "당신은 'JOINT AI - Process Optimization Suite'에 내장된 공정 엔지니어링 전문 AI 어시스턴트입니다. "
+        "이 시스템은 VOLVO SPA1/2 플랫폼 CABJ(볼스터드 조인트, Ball Stud Joint) 부품의 스웨이징(swaging) 조립 "
+        "공정 검사 데이터를 학습하여, 목표 품질 KPI(분리 토크, 회전 토크, 축/반경방향 유격 등)를 만족하는 "
+        "34개 단품/조립 치수 공정 변수(볼스터드 직경, 케이스 내경, 시트 높이 등) 조합을 역최적화로 도출합니다.\n\n"
+        "다음 규칙을 반드시 지키세요:\n"
+        "1. 답변은 오직 아래 사용자 메시지로 주어지는 '공정 변수 값'과 '예측 KPI 값' 데이터에만 근거해야 합니다.\n"
+        "2. 각 변수명 뒤 대괄호 안의 실제 의미(예: case_inner_diameter_mm)를 참고하여 볼스터드 조인트 조립 공정 관점에서 해석하세요.\n"
+        "3. 이 데이터와 무관한 일반 지식, 다른 산업, 다른 부품, 다른 주제로 답변을 확장하지 마세요.\n"
+        "4. 변수명이나 수치가 불명확하더라도 임의로 새로운 정보를 지어내지 말고, 주어진 수치 범위 내에서만 해석하세요.\n"
+        "5. 답변은 한국어로, 공정 엔지니어가 현장에서 바로 참고할 수 있는 실무형 보고서 형식으로 작성하세요."
+    )
+
+    prompt = f"""아래는 JOINT 공정 최적화 시스템(VOLVO SPA1/2 CABJ 볼스터드 조인트 스웨이징 공정)에서 도출된 결과 데이터입니다. 이 데이터를 분석하여 공정 가이드라인을 작성해 주세요.
+
+[분석 모드]
+{mode} - {mode_desc}
+
+[도출된 공정 변수 스펙 (34개 단품/조립 치수 변수)]
+{specs_str}
+
+[해당 조건에서의 예측 품질 KPI]
+{kpis_str}
+
+[요청 사항 - 아래 형식에 맞춰 작성]
+1. 결과 요약: 위 공정 조건과 예측 KPI가 의미하는 바를 핵심만 요약
+2. KPI 적합성 평가: 각 KPI가 정상 스펙 범위 내에 있는지, 범위를 벗어났다면 어느 정도 벗어났는지 평가
+3. 주의가 필요한 공정 변수: 위 34개 변수 중 볼스터드 조인트 스웨이징 공정 특성상 특이하거나 KPI에 영향을 줄 수 있는 변수가 있다면 언급 (없으면 '특이사항 없음'으로 명시)
+4. 현장 적용 권장사항: 이 공정 조건을 실제 라인에 적용할 때 점검해야 할 사항을 3가지 이내로 제시
+
+반드시 위에 제공된 수치 데이터만을 근거로 작성하고, 데이터에 없는 내용은 추측하지 마세요."""
 
     try:
         # 1. 현재 계정에서 호출 가능한 모델 리스트 자동 추출 (404 방지)
@@ -292,8 +388,8 @@ def generate_ai_guidance(process_specs, predicted_kpis, mode="Optimization"):
         priority = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash']
         target_model = next((m for m in priority if m in available_models), available_models[0])
 
-        # 3. 모델 생성 및 호출
-        model = genai.GenerativeModel(target_model)
+        # 3. 모델 생성 (system_instruction으로 도메인/역할 고정) 및 호출
+        model = genai.GenerativeModel(target_model, system_instruction=system_instruction)
         response = model.generate_content(prompt)
         return response.text
 
