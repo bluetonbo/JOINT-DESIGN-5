@@ -217,12 +217,23 @@ SPEC_GUIDE = {
     'BT': '0.0 ~ 8.0 Nm',
     'RT': '0.0 ~ 4.0 Nm',
     'AGB': '0.0 ~ 0.3 mm',
-    'RGB': '0.0 ~ 1.0 mm',
+    'RGB': '0.0 ~ 0.4 mm',
     'AGA': '0.0 ~ 1.0 mm',
     'RGA': '0.0 ~ 1.0 mm',
     'AGI': '0.0 ~ 1.0 mm',
     'RGI': '0.0 ~ 1.0 mm'
 }
+
+for tgt in target_vars:
+    min_val, max_val = spec_limits.get(tgt, (0.0, 1.0))
+    st.session_state[f'opt_{tgt.lower()}'] = st.slider(
+        f"Target {tgt} Range",
+        min_value=min_val,
+        max_value=max_val,
+        value=(min_val, max_val),
+        key=f"slider_{tgt}"
+    )
+    
 
 # [추가] 원본 학습데이터(VOLVO_SPA12_CABJ_TRAIN_DATA) 헤더 기반 변수명 약자 -> 실제 의미 매핑 사전
 # 이 앱이 사용하는 변수명은 볼스터드(Ball Stud) 조인트 스웨이징(swaging) 조립 공정 검사 데이터의 약자임
