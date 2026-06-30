@@ -19,7 +19,7 @@ import time
 st.set_page_config(
     layout="wide", 
     page_title="JOINT AI - Process Optimization Suite",
-#    page_icon="⚡"
+    page_icon="⚡"
 )
 
 # 2. 콘솔 스타일 CSS (스크롤 박스 CSS 추가)
