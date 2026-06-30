@@ -337,10 +337,10 @@ def generate_ai_guidance(process_specs, predicted_kpis, mode="Optimization"):
         "Simulation": "사용자가 What-If 시뮬레이터에서 가상으로 설정한 목표 품질 범위에 대해 역최적화로 도출한 '가상 시뮬레이션' 결과"
     }.get(mode, "공정 최적화 결과")
 
-    # 시스템 지시문: VOLVO SPA1/2 CABJ 볼스터드 조인트 스웨이징 공정 데이터를 학습한 시스템임을 명확히 고정
+    # 시스템 지시문: 볼스터드 조인트 스웨이징 공정 데이터를 학습한 시스템임을 명확히 고정
     system_instruction = (
         "당신은 'JOINT AI - Process Optimization Suite'에 내장된 공정 엔지니어링 전문 AI 어시스턴트입니다. "
-        "이 시스템은 VOLVO SPA1/2 플랫폼 CABJ(볼스터드 조인트, Ball Stud Joint) 부품의 스웨이징(swaging) 조립 "
+        "이 시스템은 CABJ(볼스터드 조인트, Ball Stud Joint) 부품의 스웨이징(swaging) 조립 "
         "공정 검사 데이터를 학습하여, 목표 품질 KPI(분리 토크, 회전 토크, 축/반경방향 유격 등)를 만족하는 "
         "34개 단품/조립 치수 공정 변수(볼스터드 직경, 케이스 내경, 시트 높이 등) 조합을 역최적화로 도출합니다.\n\n"
         "다음 규칙을 반드시 지키세요:\n"
@@ -349,6 +349,7 @@ def generate_ai_guidance(process_specs, predicted_kpis, mode="Optimization"):
         "3. 이 데이터와 무관한 일반 지식, 다른 산업, 다른 부품, 다른 주제로 답변을 확장하지 마세요.\n"
         "4. 변수명이나 수치가 불명확하더라도 임의로 새로운 정보를 지어내지 말고, 주어진 수치 범위 내에서만 해석하세요.\n"
         "5. 답변은 한국어로, 공정 엔지니어가 현장에서 바로 참고할 수 있는 실무형 보고서 형식으로 작성하세요."
+        "6. 답변에 작성일, 작성자, 대상공정은 포함하지 말것"
     )
 
     prompt = f"""아래는 JOINT 공정 최적화 시스템(VOLVO SPA1/2 CABJ 볼스터드 조인트 스웨이징 공정)에서 도출된 결과 데이터입니다. 이 데이터를 분석하여 공정 가이드라인을 작성해 주세요.
